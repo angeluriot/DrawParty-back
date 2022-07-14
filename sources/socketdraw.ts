@@ -22,10 +22,6 @@ class AddBrushActionValidator {
 	}
 }
 
-class UpdateBrushActionDTO {
-	points: Point[] = [];
-}
-
 class UpdateBrushActionValidator {
 	// Checks if the action is a valid brush action (1 <= brushSize <= 30, color = #xxxxxx, point is in canvas)
 	static validate(data: any): boolean {
@@ -37,20 +33,10 @@ class UpdateBrushActionValidator {
 	}
 }
 
-export class DrawPlayer {
-	actionStack: number[] = [];
-	lastBrushPoint?: Point;
-}
-
 export class DrawTest {
 	readonly drawDistanceThreshold = 4
 
-	players = new Map<string, DrawPlayer>();
-	userActionIds = new Map<string, number>();
-	totalActions = 0;
-
 	init(io: Server, socket: Socket) {
-		this.players.set(socket.id, new DrawPlayer());
 
 		/* Pushes a new Brush Action to the player's stack. It's called once per path created with a brush
 		emit to all other clients the created action's id.
@@ -59,31 +45,28 @@ export class DrawTest {
 		socket.on('createBrush', (data: any) => {
 			if (!data)
 				return;
-			const player = this.players.get(socket.id);
-			if (!AddBrushActionValidator.validate(data) || !player)
+			if (!AddBrushActionValidator.validate(data))
 				return;
 			const action = data as AddBrushActionDTO;
-			const actionId = this.totalActions++;
-			player.actionStack.push(actionId);
-			socket.broadcast.emit('createBrush', { requestedBy: socket.id, action: {...action, id: actionId} });
+			socket.broadcast.emit('createBrush', { requestedBy: socket.id, action });
 		});
 
 		// Adds a point to the player's current action. It's called every 10 points placed on the client side
 		socket.on('updateBrush', (data: any) => {
 			if (!data)
 				return;
-			const player = this.players.get(socket.id);
-			if (!player || !UpdateBrushActionValidator.validate(data))
+			if (!UpdateBrushActionValidator.validate(data))
 				return;
-			const points = data.points.map((elem: any) => new Point(elem.x, elem.y));
-			for (const point of points) {
+			const points: Point[] = data.points.map((elem: any) => new Point(elem.x, elem.y));
+			for (const point of points)
 				if (!point.isInRect(canvasSize.width, canvasSize.height))
 					return;
-				if (player.lastBrushPoint && player.lastBrushPoint.distanceSquared(point) < this.drawDistanceThreshold)
-					return;
-				socket.broadcast.emit('updateBrush', {actionId: player.actionStack[player.actionStack.length - 1], point });
-				player.lastBrushPoint = point;
-			}
+			socket.broadcast.emit('updateBrush', { requestedBy: socket.id, points });
+		});
+
+		// Adds a point to the player's current action. It's called every 10 points placed on the client side
+		socket.on('clearActions', () => {
+			socket.broadcast.emit('clearActions', { requestedBy: socket.id });
 		});
 	}
 }
