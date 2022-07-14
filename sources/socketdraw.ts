@@ -34,8 +34,6 @@ class UpdateBrushActionValidator {
 }
 
 export class DrawTest {
-	readonly drawDistanceThreshold = 4
-
 	init(io: Server, socket: Socket) {
 
 		/* Pushes a new Brush Action to the player's stack. It's called once per path created with a brush
@@ -64,9 +62,16 @@ export class DrawTest {
 			socket.broadcast.emit('updateBrush', { requestedBy: socket.id, points });
 		});
 
-		// Adds a point to the player's current action. It's called every 10 points placed on the client side
 		socket.on('clearActions', () => {
 			socket.broadcast.emit('clearActions', { requestedBy: socket.id });
+		});
+
+		socket.on('undo', () => {
+			socket.broadcast.emit('undo', { requestedBy: socket.id });
+		});
+
+		socket.on('redo', () => {
+			socket.broadcast.emit('redo', { requestedBy: socket.id });
 		});
 	}
 }
