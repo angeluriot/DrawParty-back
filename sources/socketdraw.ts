@@ -70,6 +70,7 @@ export class DrawTest {
 		});
 
 		socket.on('clearActions', () => {
+			this.actionHistory.push(new ActionIdentifier(socket.id, 'clearActions', {}));
 			socket.broadcast.emit('clearActions', { requestedBy: socket.id });
 		});
 
