@@ -47,6 +47,7 @@ class ActionIdentifier {
 
 export class DrawTest {
 	actionHistory: ActionIdentifier[] = [];
+	// Actions that were sent to the clients
 	actionsSent: number = 0;
 
 	init(io: Server, socket: Socket) {
@@ -54,7 +55,6 @@ export class DrawTest {
 			if (!data || !AddBrushActionValidator.validate(data))
 				return;
 			const action = data as AddBrushActionDTO;
-			// Twice because there is two points at the creation of a brush
 			this.actionHistory.push(new ActionIdentifier(socket.id, 'createBrush', action));
 			socket.broadcast.emit('createBrush', { requestedBy: socket.id, action });
 		});
@@ -67,25 +67,22 @@ export class DrawTest {
 				if (!point.isInRect(canvasSize.width, canvasSize.height))
 					return;
 			this.actionHistory.push(new ActionIdentifier(socket.id, 'updateBrush', points));
-			socket.broadcast.emit('updateBrush', { requestedBy: socket.id, points });
 		});
 
 		socket.on('clearActions', () => {
-			this.actionHistory.push(new ActionIdentifier(socket.id, 'clearActions', {}));
 			socket.broadcast.emit('clearActions', { requestedBy: socket.id });
 		});
 
+		// TODO
 		socket.on('undo', () => {
-			this.actionHistory.push(new ActionIdentifier(socket.id, 'undo', {}));
-			socket.broadcast.emit('undo', { requestedBy: socket.id });
 		});
 
+		// TODO
 		socket.on('redo', () => {
-			this.actionHistory.push(new ActionIdentifier(socket.id, 'redo', {}));
-			socket.broadcast.emit('redo', { requestedBy: socket.id });
 		});
 	}
 
+	// Called once per frame, sends the actions that weren't already sent to the clients
 	update(io: Server) {
 		if (this.actionsSent >= this.actionHistory.length)
 			return;
