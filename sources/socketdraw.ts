@@ -81,6 +81,7 @@ export class DrawTest {
 
 		// TODO
 		socket.on('redo', () => {
+			this.actionHistory.push(new ActionIdentifier(socket.id, 'redo', { requestedBy: socket.id }));
 		});
 	}
 
