@@ -33,45 +33,63 @@ class UpdateBrushActionValidator {
 	}
 }
 
-export class DrawTest {
-	init(io: Server, socket: Socket) {
+class ActionIdentifier {
+	requestedBy: string;
+	type: string;
+	data: any;
 
-		/* Pushes a new Brush Action to the player's stack. It's called once per path created with a brush
-		emit to all other clients the created action's id.
-		It allows to only store the ids on the server side. So an action is just a number on the server side
-		*/
+	constructor(requestedBy: string, type: string, data: any) {
+		this.requestedBy = requestedBy;
+		this.type = type;
+		this.data = data;
+	}
+}
+
+export class DrawTest {
+	actionHistory: ActionIdentifier[] = [];
+	actionsSent: number = 0;
+
+	init(io: Server, socket: Socket) {
 		socket.on('createBrush', (data: any) => {
-			if (!data)
-				return;
-			if (!AddBrushActionValidator.validate(data))
+			if (!data || !AddBrushActionValidator.validate(data))
 				return;
 			const action = data as AddBrushActionDTO;
+			// Twice because there is two points at the creation of a brush
+			this.actionHistory.push(new ActionIdentifier(socket.id, 'createBrush', action));
 			socket.broadcast.emit('createBrush', { requestedBy: socket.id, action });
 		});
 
-		// Adds a point to the player's current action. It's called every 10 points placed on the client side
 		socket.on('updateBrush', (data: any) => {
-			if (!data)
-				return;
-			if (!UpdateBrushActionValidator.validate(data))
+			if (!data || !UpdateBrushActionValidator.validate(data))
 				return;
 			const points: Point[] = data.points.map((elem: any) => new Point(elem.x, elem.y));
 			for (const point of points)
 				if (!point.isInRect(canvasSize.width, canvasSize.height))
 					return;
+			this.actionHistory.push(new ActionIdentifier(socket.id, 'updateBrush', points));
 			socket.broadcast.emit('updateBrush', { requestedBy: socket.id, points });
 		});
 
 		socket.on('clearActions', () => {
+			this.actionHistory.push(new ActionIdentifier(socket.id, 'clearActions', {}));
 			socket.broadcast.emit('clearActions', { requestedBy: socket.id });
 		});
 
 		socket.on('undo', () => {
+			this.actionHistory.push(new ActionIdentifier(socket.id, 'undo', {}));
 			socket.broadcast.emit('undo', { requestedBy: socket.id });
 		});
 
 		socket.on('redo', () => {
+			this.actionHistory.push(new ActionIdentifier(socket.id, 'redo', {}));
 			socket.broadcast.emit('redo', { requestedBy: socket.id });
 		});
+	}
+
+	update(io: Server) {
+		if (this.actionsSent >= this.actionHistory.length)
+			return;
+			io.emit('serverUpdate', this.actionHistory.slice(this.actionsSent));
+			this.actionsSent = this.actionHistory.length;
 	}
 }

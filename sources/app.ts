@@ -35,6 +35,8 @@ io.on('connection', (socket: Socket) => {
 	drawTest.init(io, socket);
 });
 
+setInterval(() => {drawTest.update(io)}, 1 / 30 * 1000);
+
 server.listen(port, () => {
 	console.log(`Server is running on port ${port}`);
 });
