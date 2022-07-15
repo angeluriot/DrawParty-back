@@ -76,6 +76,7 @@ export class DrawTest {
 
 		// TODO
 		socket.on('undo', () => {
+			this.actionHistory.push(new ActionIdentifier(socket.id, 'undo', { requestedBy: socket.id }));
 		});
 
 		// TODO
@@ -87,7 +88,7 @@ export class DrawTest {
 	update(io: Server) {
 		if (this.actionsSent >= this.actionHistory.length)
 			return;
-			io.emit('serverUpdate', this.actionHistory.slice(this.actionsSent));
-			this.actionsSent = this.actionHistory.length;
+		io.emit('serverUpdate', this.actionHistory.slice(this.actionsSent));
+		this.actionsSent = this.actionHistory.length;
 	}
 }
