@@ -7,6 +7,7 @@ class AddBrushActionDTO {
 	color = '';
 	size = 0;
 	point = new Point();
+	eraser = false;
 }
 
 class AddBrushActionValidator {
