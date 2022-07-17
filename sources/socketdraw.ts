@@ -8,6 +8,7 @@ class AddBrushActionDTO {
 	size = 0;
 	point = new Point();
 	eraser = false;
+	layer = 0;
 }
 
 class AddBrushActionValidator {
@@ -18,6 +19,10 @@ class AddBrushActionValidator {
 		if (!data.size || data.size < 1 || data.size > 30)
 			return false;
 		if (!data.point || !data.point.x || !data.point.y || !new Point(data.point.x, data.point.y).isInRect(canvasSize.width, canvasSize.height))
+			return false;
+		if (data.eraser == undefined || data.eraser == null)
+			return false;
+		if (data.layer == undefined || data.layer == null || data.layer < 0 || data.layer > 2)
 			return false;
 		return true;
 	}
