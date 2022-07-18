@@ -22,7 +22,7 @@ class AddBrushActionValidator {
 			return false;
 		if (data.eraser == undefined || data.eraser == null)
 			return false;
-		if (data.layer == undefined || data.layer == null || data.layer < 0 || data.layer > 2)
+		if (data.layer == undefined || data.layer == null || data.layer < 0 || data.layer > 1)
 			return false;
 		return true;
 	}
