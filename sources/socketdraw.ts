@@ -1,9 +1,9 @@
 import { Server, Socket } from 'socket.io';
 import Point from './Point.js';
 
-class AddBrushActionValidator {
+class ActionValidator {
 	// Checks if the action is a valid brush action (1 <= brushSize <= 30, color = #xxxxxx, point is in canvas, layer = 0 | 1, eraser is a bool)
-	static validate(data: any): boolean {
+	static validateCreateBrush(data: any): boolean {
 		if (!data.color || !/^#[a-fA-F0-9]{6}$/.test(data.color))
 			return false;
 		if (!Number.isSafeInteger(data.size) || data.size < 1 || data.size > 30)
@@ -16,15 +16,26 @@ class AddBrushActionValidator {
 			return false;
 		return true;
 	}
-}
 
-class UpdateBrushActionValidator {
-	static validate(data: any): boolean {
+	// Checks if the action is a valid update brush action (point is in canvas)
+	static validateUpdateBrush(data: any): boolean {
 		if (!data.point || !Number.isFinite(data.point.x) || !Number.isFinite(data.point.y) || !new Point(data.point.x, data.point.y).isInRect(1, 1))
 			return false;
 		return true;
 	}
+
+	// Checks if the action is a valid fill action (color = #xxxxxx, point is in canvas, layer = 0 | 1)
+	static validateFill(data: any): boolean {
+		if (!data.color || !/^#[a-fA-F0-9]{6}$/.test(data.color))
+			return false;
+		if (!data.point || !Number.isFinite(data.point.x) || !Number.isFinite(data.point.y) || !new Point(data.point.x, data.point.y).isInRect(1, 1))
+			return false;
+		if (!Number.isSafeInteger(data.layer) || data.layer < 0 || data.layer > 1)
+			return false;
+		return true;
+	}
 }
+
 
 class ActionIdentifier {
 	requestedBy: string;
@@ -43,13 +54,19 @@ export class DrawTest {
 	actionsSent: number = 0;
 
 	createBrush(socket: Socket, action: any): void {
-		if (!AddBrushActionValidator.validate(action))
+		if (!ActionValidator.validateCreateBrush(action))
 			return;
 		this.actionHistory.push(new ActionIdentifier(socket.id, 'createBrush', {layer: action.layer, color: action.color, size: action.size, point: action.point, eraser: action.eraser}));
 	}
 
+	fill(socket: Socket, action: any): void {
+		if (!ActionValidator.validateFill(action))
+			return;
+		this.actionHistory.push(new ActionIdentifier(socket.id, 'fill', {layer: action.layer, color: action.color, point: action.point}));
+	}
+
 	updateBrush(socket: Socket, action: any): void {
-		if (!UpdateBrushActionValidator.validate(action))
+		if (!ActionValidator.validateUpdateBrush(action))
 			return;
 		const point = new Point(action.point.x, action.point.y);
 		this.actionHistory.push(new ActionIdentifier(socket.id, 'updateBrush', point));
@@ -59,11 +76,11 @@ export class DrawTest {
 		this.actionHistory.push(new ActionIdentifier(socket.id, 'clear', {}));
 	}
 
-	undo(socket: Socket, action: any) {
+	undo(socket: Socket) {
 		this.actionHistory.push(new ActionIdentifier(socket.id, 'undo', { requestedBy: socket.id }));
 	}
 
-	redo(socket: Socket, action: any) {
+	redo(socket: Socket) {
 		this.actionHistory.push(new ActionIdentifier(socket.id, 'redo', { requestedBy: socket.id }));
 	}
 
@@ -81,9 +98,11 @@ export class DrawTest {
 				else if (action.type == 'clear')
 					this.clear(socket, action);
 				else if (action.type == 'undo')
-					this.undo(socket, action);
+					this.undo(socket);
 				else if (action.type == 'redo')
-					this.redo(socket, action);
+					this.redo(socket);
+				else if (action.type == 'fill')
+					this.fill(socket, action);
 			}
 		})
 	}
