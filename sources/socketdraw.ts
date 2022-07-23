@@ -86,7 +86,7 @@ export class DrawTest {
 
 	init(io: Server, socket: Socket) {
 		socket.on('clientUpdate', (data: any) => {
-			if (!data || !Array.isArray(data))
+			if (!data || !Array.isArray(data) || data.length > 50)
 				return;
 			for (const action of data) {
 				if (!action || !action.type)
@@ -101,6 +101,7 @@ export class DrawTest {
 					this.undo(socket);
 				else if (action.type == 'redo')
 					this.redo(socket);
+				// TODO: check if the game is a single-drawer game
 				else if (action.type == 'fill')
 					this.fill(socket, action);
 			}
