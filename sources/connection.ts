@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io';
-import { Global } from './Global.js';
-import { Party } from './Party.js';
-import { Player } from './Player.js';
+import Global from './Global.js';
+import Party from './Party.js';
+import Player from './Player.js';
 import * as Utils from './utils.js';
 
 function checkParty(socket: Socket, partyId: string)

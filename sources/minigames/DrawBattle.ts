@@ -1,8 +1,8 @@
-import { Minigame } from "./Minigame.js";
-import { Party } from '../Party.js';
-import { Global } from "../Global.js";
+import Minigame from "./Minigame.js";
+import Party from '../Party.js';
+import Global from "../Global.js";
 
-export class DrawBattle extends Minigame
+export default class DrawBattle extends Minigame
 {
 	constructor(party: Party, type: string)
 	{

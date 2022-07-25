@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 import { isThisTypeNode } from 'typescript';
-import { Global } from './Global.js';
+import Global from './Global.js';
 
 export function createPartyId()
 {
@@ -46,7 +46,7 @@ export function is(value: any, type: string)
 
 export function isInt(int: number, min: number, max: number)
 {
-	return is(int, 'number') && Number.isInteger(int) && int >= min && int <= max;
+	return is(int, 'number') && Number.isSafeInteger(int) && int >= min && int <= max;
 }
 
 export function isIndex(index: number, array: any[])

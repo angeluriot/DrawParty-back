@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 
-export class Player
+export default class Player
 {
 	socket: Socket;
 	image: string;

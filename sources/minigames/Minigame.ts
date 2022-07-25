@@ -1,7 +1,7 @@
-import { Global } from '../Global.js';
-import { Party } from '../Party.js';
+import Global from '../Global.js';
+import Party from '../Party.js';
 
-export class Minigame
+export default class Minigame
 {
 	party: Party;
 	name = '';

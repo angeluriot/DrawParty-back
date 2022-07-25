@@ -1,8 +1,8 @@
-import { Player } from './Player.js';
-import { Minigame } from './minigames/Minigame.js';
-import { Global } from './Global.js';
+import Player from './Player.js';
+import Minigame from './minigames/Minigame.js';
+import Global from './Global.js';
 
-export class Party
+export default class Party
 {
 	id: string;
 	players: Player[] = [];

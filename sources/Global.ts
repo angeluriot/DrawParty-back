@@ -1,8 +1,8 @@
-import { Party } from './Party.js';
+import Party from './Party.js';
 import { Server } from 'socket.io';
-import { DrawBattle } from './minigames/DrawBattle.js';
+import DrawBattle from './minigames/DrawBattle.js';
 
-export class Global
+export default class Global
 {
 	static io: Server;
 	static parties = new Map<string, Party>();
