@@ -1,4 +1,6 @@
 import { Socket } from 'socket.io';
+import { isThisTypeNode } from 'typescript';
+import { Global } from './Global.js';
 
 export function createPartyId()
 {
@@ -17,5 +19,37 @@ export function getPartyId(socket: Socket)
 		if (room != socket.id)
 			return room;
 
-	return null;
+	return undefined;
+}
+
+export function getParty(socket: Socket)
+{
+	let partyId;
+
+	for (let room of socket.rooms)
+		if (room != socket.id)
+		{
+			partyId = room;
+			break;
+		}
+
+	if (!partyId)
+		return undefined;
+
+	return Global.parties.get(partyId);
+}
+
+export function is(value: any, type: string)
+{
+	return value != null && value != undefined && typeof value === type;
+}
+
+export function isInt(int: number, min: number, max: number)
+{
+	return is(int, 'number') && Number.isInteger(int) && int >= min && int <= max;
+}
+
+export function isIndex(index: number, array: any[])
+{
+	return isInt(index, 0, array.length - 1);
 }

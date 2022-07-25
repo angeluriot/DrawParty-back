@@ -1,12 +1,14 @@
+import { Socket } from "socket.io";
+
 export class Player
 {
-	id: string;
+	socket: Socket;
 	image: string;
 	score: number = 0;
 
-	constructor(id: string, image: string)
+	constructor(socket: Socket, image: string)
 	{
-		this.id = id;
+		this.socket = socket;
 		this.image = image;
 	}
 };
